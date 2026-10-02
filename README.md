@@ -6,11 +6,12 @@ Production-ready Laravel application for issuing, verifying, and exporting Secur
 
 - **PHP 8.3+** (Laravel 13)
 - **Composer 2**
-- **Node.js 18+** (Vite / Tailwind build)
 - **MySQL 8+** (or SQLite for local demos)
 - PHP extensions: `bcmath`, `ctype`, `curl`, `fileinfo`, `gd`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `zip`
 
 > Local XAMPP PHP 8.0 is **not** supported. Use PHP 8.3+ (Herd, Docker, upgraded XAMPP, or WinGet `PHP.PHP.8.3`).
+
+**No Node.js / Vite required.** Frontend is Blade + static CSS + CDN Alpine; admin uses AdminLTE from `public/vendor`.
 
 ## Quick start
 
@@ -37,8 +38,6 @@ Create the database, then:
 
 ```bash
 php artisan migrate --seed
-npm install
-npm run build
 php artisan serve
 ```
 
@@ -51,6 +50,7 @@ DB_CONNECTION=sqlite
 ```bash
 touch database/database.sqlite
 php artisan migrate --seed
+php artisan serve
 ```
 
 ## Default admin accounts
@@ -91,17 +91,63 @@ Stored certificate numbers use slashes (`BASDU/OA/2025/0147`). Public URLs use d
 - Logo: `public/images/logo.png` (replace with your official logo)
 - Fonts used for PNG export: `resources/fonts/` (`georgia.ttf`, `script.ttf`, etc.)
 
-## Admin UI
+## Frontend (no Node / Vite)
 
-The secure admin panel uses **[Laravel AdminLTE v4](https://jeroennoten.github.io/Laravel-AdminLTE/)** (AdminLTE 4 + Bootstrap 5.3):
+Public UI:
+- Blade templates
+- Static CSS: `public/css/site.css`
+- Alpine.js via CDN (mobile menu)
+
+Admin UI:
+- AdminLTE / Bootstrap from `public/vendor`
+
+## Deploy on Vercel
+
+This is a **Laravel PHP app**, not a static Vite site. Vercel’s default Vite preset looks for a `dist` folder and will fail — do **not** set Framework Preset to Vite or Output Directory to `dist`.
+
+This repo includes container deployment files:
+
+- [`vercel.json`](vercel.json)
+- [`Dockerfile.vercel`](Dockerfile.vercel)
+- [`Caddyfile`](Caddyfile)
+
+### Vercel project settings
+
+1. Framework Preset: **Other** (or leave blank)
+2. Build / Output Directory: leave empty (handled by `vercel.json` container service)
+3. Root Directory: project root
+
+### Required environment variables
+
+Set these in Vercel → Project → Settings → Environment Variables:
+
+| Variable | Notes |
+|----------|--------|
+| `APP_KEY` | Run `php artisan key:generate --show` locally and paste the value |
+| `APP_URL` | Your Vercel URL, e.g. `https://your-app.vercel.app` |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `DB_CONNECTION` | `mysql` (or `pgsql`) |
+| `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | External database (Vercel has no built-in MySQL) |
+
+Optional but recommended:
+
+- `SESSION_DRIVER=cookie` (already defaulted in Docker)
+- `CACHE_STORE=database` or Redis if you need shared cache
+- `LOG_CHANNEL=stderr`
+
+### After first deploy
+
+Run migrations against your external database from your machine (or CI):
 
 ```bash
-composer require jeroennoten/laravel-adminlte
-npm i bootstrap@^5.3 bootstrap-icons@^1.13 overlayscrollbars@^2.11 @fontsource/source-sans-3@^5.3
-php artisan adminlte:install
+php artisan migrate --force --seed
 ```
 
-Configuration lives in `config/adminlte.php` (branding, sidebar menu, dark sidebar theme).
+### Important limits
+
+- Container filesystem is **not durable** — use an external DB; do not rely on local SQLite/uploads for production.
+- Certificate PDF/PNG generation needs the GD extension (already installed in `Dockerfile.vercel`).
 
 ## Security notes
 

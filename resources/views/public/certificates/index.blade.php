@@ -3,40 +3,40 @@
 @section('title', 'Certificates')
 
 @section('content')
-<section class="border-b border-[var(--line)] bg-white">
-    <div class="site-container py-12">
-        <h1 class="font-display text-3xl text-[var(--brand)] md:text-4xl">Certificates</h1>
-        <p class="mt-2 text-[var(--muted)]">Browse active operational assessment records.</p>
+<section class="panel">
+    <div class="site-container panel-inner">
+        <h1 class="font-display page-title">Certificates</h1>
+        <p class="mt-2 muted">Browse active operational assessment records.</p>
 
-        <form method="GET" class="mt-8 flex max-w-lg flex-col gap-3 sm:flex-row">
+        <form method="GET" class="search-row">
             <input type="text" name="q" value="{{ request('q') }}" placeholder="Search by number or name" class="field">
-            <button class="btn-primary sm:shrink-0">Search</button>
+            <button class="btn-primary">Search</button>
         </form>
     </div>
 </section>
 
-<section class="site-container py-10">
-    <div class="border-t border-[var(--line)]">
+<section class="site-container section-sm">
+    <div class="border-t">
         @forelse($certificates as $certificate)
             <a href="{{ route('certificates.show', $certificate->slug) }}" class="cert-row">
-                <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div class="cert-row-inner">
                     <div>
-                        <div class="font-display text-xl text-[var(--brand)]">{{ $certificate->handler_name }}</div>
-                        <div class="mt-1 text-sm text-[var(--muted)]">
+                        <div class="font-display text-xl" style="color: var(--brand);">{{ $certificate->handler_name }}</div>
+                        <div class="mt-1 text-sm muted">
                             {{ $certificate->certificate_number }} · {{ $certificate->training_organization }}
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 text-sm">
+                    <div class="cert-row-meta">
                         <span class="{{ $certificate->isPassed() ? 'status-pass' : 'status-fail' }}">{{ $certificate->result }}</span>
-                        <span class="text-[var(--muted)]">{{ $certificate->date_of_assessment->format('d M Y') }}</span>
+                        <span class="muted">{{ $certificate->date_of_assessment->format('d M Y') }}</span>
                     </div>
                 </div>
             </a>
         @empty
-            <p class="py-12 text-center text-[var(--muted)]">No certificates found.</p>
+            <p class="empty-center">No certificates found.</p>
         @endforelse
     </div>
 
-    <div class="mt-8">{{ $certificates->links() }}</div>
+    <div class="mt-8">{{ $certificates->links('vendor.pagination.simple') }}</div>
 </section>
 @endsection

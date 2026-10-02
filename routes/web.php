@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
+Route::get('/health', fn () => response()->json(['status' => 'ok']))->name('health');
 
 Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
 Route::get('/certificates/{slug}', [CertificateController::class, 'show'])->name('certificates.show');
