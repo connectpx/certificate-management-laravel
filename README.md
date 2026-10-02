@@ -119,36 +119,26 @@ This repo includes container deployment files:
 
 ### Required environment variables
 
-Vercel has **no built-in MySQL**. If these are missing, Laravel falls back to SQLite and you get:
-`Database file at path [/app/database/database.sqlite] does not exist`.
+Set these in Vercel → Project → Settings → Environment Variables:
 
-Set these in Vercel → Project → Settings → Environment Variables (Production):
-
-| Variable | Example / notes |
-|----------|-----------------|
-| `APP_KEY` | From local: `php artisan key:generate --show` |
-| `APP_URL` | `https://your-app.vercel.app` |
+| Variable | Notes |
+|----------|--------|
+| `APP_KEY` | Run `php artisan key:generate --show` locally and paste the value |
+| `APP_URL` | Your Vercel URL, e.g. `https://your-app.vercel.app` |
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
-| `DB_CONNECTION` | `mysql` |
-| `DB_HOST` | Your managed MySQL host (PlanetScale, Railway, Aiven, RDS, etc.) |
-| `DB_PORT` | `3306` (or provider port) |
-| `DB_DATABASE` | Database name |
-| `DB_USERNAME` | DB user |
-| `DB_PASSWORD` | DB password |
+| `DB_CONNECTION` | `mysql` (or `pgsql`) |
+| `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | External database (Vercel has no built-in MySQL) |
 
-Also set (already defaulted in Docker, but safe to set explicitly):
+Optional but recommended:
 
-- `SESSION_DRIVER=cookie`
-- `CACHE_STORE=array`
-- `QUEUE_CONNECTION=sync`
+- `SESSION_DRIVER=cookie` (already defaulted in Docker)
+- `CACHE_STORE=database` or Redis if you need shared cache
 - `LOG_CHANNEL=stderr`
-
-Redeploy after saving env vars.
 
 ### After first deploy
 
-Point a local `.env` at the **same** production database (or use your provider’s SQL console), then:
+Run migrations against your external database from your machine (or CI):
 
 ```bash
 php artisan migrate --force --seed
