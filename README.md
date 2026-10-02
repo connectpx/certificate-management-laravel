@@ -136,13 +136,25 @@ Optional but recommended:
 - `CACHE_STORE=database` or Redis if you need shared cache
 - `LOG_CHANNEL=stderr`
 
+### Migrations on deploy
+
+The container entrypoint runs `php artisan migrate --force` on every start (uses `DB_URL_UNPOOLED` / `DATABASE_URL_UNPOOLED` when set — recommended for Neon).
+
+Optional one-time seed (do **not** leave enabled):
+
+```env
+RUN_DB_SEED=true
+```
+
+Also set on Vercel (in addition to `DB_URL`):
+
+```env
+DB_URL_UNPOOLED=postgresql://...@ep-....neon.tech/neondb?sslmode=require
+```
+
 ### After first deploy
 
-Run migrations against your external database from your machine (or CI):
-
-```bash
-php artisan migrate --force --seed
-```
+Migrations run automatically. Seeders only run if `RUN_DB_SEED=true`.
 
 ### Important limits
 
