@@ -130,11 +130,15 @@ Set these in Vercel → Project → Settings → Environment Variables:
 | `DB_CONNECTION` | `mysql` (or `pgsql`) |
 | `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | External database (Vercel has no built-in MySQL) |
 
-Optional but recommended:
+Also set on Vercel (required for Neon pooled Postgres):
 
-- `SESSION_DRIVER=cookie` (already defaulted in Docker)
-- `CACHE_STORE=database` or Redis if you need shared cache
-- `LOG_CHANNEL=stderr`
+```env
+SESSION_DRIVER=cookie
+CACHE_STORE=array
+QUEUE_CONNECTION=sync
+```
+
+Do **not** set `CACHE_STORE=database` or `SESSION_DRIVER=database` with Neon’s pooler host — login rate limiting will fail with `SQLSTATE[25P02]`. The container entrypoint forces `array`/`cookie` unless `ALLOW_DB_CACHE=true`.
 
 ### Migrations on deploy
 
